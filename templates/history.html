@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>SOC History</title>
+
+<style>
+body{
+background:#020617;
+color:white;
+font-family:Arial;
+}
+
+input{
+padding:6px;
+margin:6px;
+background:#020617;
+color:white;
+border:1px solid #38bdf8;
+}
+
+table{
+width:98%;
+border-collapse:collapse;
+margin:auto;
+}
+
+th,td{
+border:1px solid #334155;
+padding:6px;
+}
+
+th{
+background:#020617;
+color:#38bdf8;
+position:sticky;
+top:0;
+}
+
+.high{background:#7f1d1d}
+.medium{background:#78350f}
+.low{background:#022c22}
+</style>
+</head>
+
+<body>
+
+<h2>SOC Attack History</h2>
+
+<button onclick="location.href='/'">← Back to Dashboard</button>
+
+
+<input placeholder="Search IP" onkeyup="filterIP(this.value)">
+<select onchange="filterSeverity(this.value)">
+<option value="">All</option>
+<option>High</option>
+<option>Medium</option>
+<option>Low</option>
+</select>
+
+<table>
+<thead>
+<tr>
+<th>ID</th><th>IP</th><th>Country</th><th>Attack</th>
+<th>Severity</th><th>Risk</th><th>Phase</th><th>Time</th>
+</tr>
+</thead>
+<tbody id="hist"></tbody>
+</table>
+
+<script>
+
+let rows=[];
+
+fetch("/api/history")
+.then(r=>r.json())
+.then(d=>{
+rows=d;
+render(rows);
+});
+
+function render(data){
+let h="";
+data.forEach(r=>{
+let c=r[7]=="High"?"high":r[7]=="Medium"?"medium":"low";
+h+=`<tr class="${c}">
+<td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td>
+<td>${r[6]}</td><td>${r[7]}</td><td>${r[8]}</td>
+<td>${r[13]}</td><td>${r[14]}</td></tr>`;
+});
+hist.innerHTML=h;
+}
+
+function filterIP(v){
+render(rows.filter(r=>r[1].includes(v)));
+}
+
+function filterSeverity(v){
+render(v?rows.filter(r=>r[7]==v):rows);
+}
+
+</script>
+
+</body>
+</html>

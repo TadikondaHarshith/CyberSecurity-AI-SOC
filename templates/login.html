@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>SOC Login</title>
+
+<style>
+body{
+margin:0;
+height:100vh;
+display:flex;
+align-items:center;
+justify-content:center;
+background:radial-gradient(circle at top,#0b1220,#020617);
+font-family:Arial;
+color:white;
+}
+
+.card{
+background:rgba(15,23,42,.9);
+padding:40px;
+border-radius:14px;
+box-shadow:0 0 40px #0ea5e955;
+text-align:center;
+width:320px;
+}
+
+h2{margin-bottom:20px;color:#38bdf8}
+
+input{
+width:100%;
+padding:10px;
+margin:10px 0;
+background:#020617;
+color:white;
+border:1px solid #38bdf8;
+border-radius:6px;
+}
+
+button{
+width:100%;
+padding:10px;
+background:#38bdf8;
+border:none;
+border-radius:6px;
+cursor:pointer;
+font-weight:bold;
+}
+
+button:hover{
+background:#22c55e;
+}
+
+.footer{
+margin-top:15px;
+font-size:12px;
+color:#64748b;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+<h2>🔐 AI SOC Login</h2>
+
+<form method="post">
+<input name="username" placeholder="Username" required>
+<input type="password" name="password" placeholder="Password" required>
+
+<button>Login</button>
+</form>
+
+<div class="footer">
+AI Powered SOC Platform
+</div>
+
+</div>
+
+</body>
+</html>

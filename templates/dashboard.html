@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>CyberSecurity AI SOC</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+<style>
+body{
+min-height:200vh;
+margin:0;
+font-family:Arial;
+background:radial-gradient(circle at top,#0b1220,#020617);
+color:white;
+text-align:center;
+}
+
+#map{height:380px;width:96%;margin:20px auto}
+#graphs{
+width:96%;
+height:420px;
+margin:40px auto;
+}
+table{
+margin-top:40px;
+}
+
+
+
+.box{
+background:#e11d48;
+padding:12px 20px;
+border-radius:6px;
+display:inline-block;
+margin:4px;
+}
+
+table{width:96%;margin:20px auto;border-collapse:collapse}
+th,td{border:1px solid #334155;padding:6px}
+
+.high{background:#7f1d1d}
+.medium{background:#78350f}
+.low{background:#022c22}
+
+@keyframes blink{50%{opacity:.3}}
+.high{animation:blink 1s infinite}
+
+@keyframes pulse{
+0%{transform:scale(1);opacity:1}
+50%{transform:scale(1.5);opacity:.4}
+100%{transform:scale(1);opacity:1}
+}
+
+.pulse{animation:pulse 1s infinite}
+
+#killPhase{
+font-weight:bold;
+padding:6px 14px;
+border-radius:6px;
+background:#020617;
+border:1px solid #334155;
+}
+
+html{
+scroll-behavior:smooth;
+}
+html,body{
+height:100%;
+overflow-y:auto;
+scroll-behavior:smooth;
+}
+#scrollBtns{
+position:fixed;
+left:15px;
+bottom:80px;
+display:flex;
+flex-direction:column;
+gap:10px;
+z-index:999;
+}
+
+#scrollBtns button{
+background:#020617;
+color:#22c55e;
+border:1px solid #22c55e;
+padding:8px;
+border-radius:50%;
+cursor:pointer;
+}
+
+#scrollBtns button:hover{
+background:#22c55e;
+color:black;
+}
+#socNav{
+position:fixed;
+right:15px;
+top:40%;
+display:flex;
+flex-direction:column;
+gap:10px;
+z-index:999;
+}
+
+#socNav button{
+background:#020617;
+color:#38bdf8;
+border:1px solid #38bdf8;
+padding:6px 12px;
+border-radius:8px;
+cursor:pointer;
+}
+
+#socNav button:hover{
+background:#38bdf8;
+color:black;
+}
+.soc-card{
+background:rgba(15,23,42,.85);
+border-radius:12px;
+padding:15px;
+margin:30px auto;
+width:90%;
+box-shadow:0 0 25px #0ea5e933;
+}
+
+.table-scroll{
+max-height:260px;
+overflow-y:auto;
+}
+
+/* professional table header */
+.table-scroll thead th{
+position:sticky;
+top:0;
+background:#020617;
+color:#38bdf8;
+}
+
+/* custom scrollbar */
+.table-scroll::-webkit-scrollbar{
+width:6px;
+}
+
+.table-scroll::-webkit-scrollbar-thumb{
+background:#0ea5e9;
+border-radius:10px;
+}
+#topNav{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+background:#020617;
+padding:10px;
+z-index:1000;
+}
+body{
+padding-top:60px;
+}
+
+
+#topNav button{
+background:#020617;
+color:#22c55e;
+border:1px solid #22c55e;
+padding:6px 14px;
+border-radius:8px;
+cursor:pointer;
+margin:5px;
+}
+
+#topNav button:hover{
+background:#22c55e;
+color:black;
+#topNav{
+position:sticky;
+top:0;
+background:#020617;
+padding:10px;
+z-index:999;
+#map{
+margin-bottom:40px;
+}
+
+}
+
+}
+.selected{
+outline:2px solid #38bdf8;
+box-shadow:0 0 15px #38bdf8;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1 id="topTitle">🛡 CyberSecurity AI SOC Dashboard</h1>
+
+<div id="topNav">
+<button onclick="go('topTitle')">Dashboard</button>
+<button onclick="location.href='/history'">History</button>
+{% if role=="admin" %}
+<button onclick="location.href='/incidents'">Incidents</button>
+{% endif %}
+<button onclick="location.href='/report'">📄 SOC Report</button>
+<button onclick="location.href='/logout'">Logout</button>
+</div>
+
+
+
+
+<div id="alertBanner" style="display:none;background:#7f1d1d;padding:10px;margin:10px auto;width:96%;font-weight:bold">
+🚨 HIGH SEVERITY ATTACK DETECTED
+</div>
+
+<div class="box">Total: <span id="total">0</span></div>
+<div class="box" style="background:#2563eb">Incidents: <span id="incidentCount">0</span></div>
+<div class="box" style="background:#065f46">Threat: <span id="threatScore">0</span></div>
+
+
+<div style="margin-top:10px">
+Kill Chain Phase:
+<span id="killPhase">Recon</span>
+</div>
+
+<br><br>
+
+<button onclick="enableAudio()">Enable SOC Audio</button>
+
+<audio id="socAudio">
+<source src="https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg">
+</audio>
+
+<div id="map"></div>
+
+<div id="graphs"><canvas id="socTimeline"></canvas></div>
+
+<h2>📋 All Attacks</h2>
+
+<table>
+<thead>
+<tr>
+<th>ID</th><th>IP</th><th>Country</th><th>Packets</th>
+<th>Login</th><th>SQL</th><th>Attack</th><th>Severity</th>
+<th>Risk</th><th>MITRE</th><th>Abuse</th><th>Reports</th>
+<th>Phase</th><th>Time</th>
+</tr>
+</thead>
+<tbody id="socTable"></tbody>
+</table>
+
+<h2>🚨 High Severity</h2>
+
+<table>
+<thead>
+<tr><th>ID</th><th>IP</th><th>Attack</th><th>Risk</th><th>Phase</th><th>Time</th></tr>
+</thead>
+<tbody id="attackLog"></tbody>
+</table>
+
+<div class="soc-card" id="topAttackers">
+<h2>🚩 Top Attacker IPs</h2>
+
+<div class="table-scroll">
+<table>
+<thead>
+<tr>
+<th>IP</th>
+<th>Attack Count</th>
+</tr>
+</thead>
+<tbody id="topAttackersBody"></tbody>
+</table>
+</div>
+</div>
+
+
+<div class="soc-card" id="attackDistribution">
+<h2>📊 Attack Distribution</h2>
+
+<div class="table-scroll">
+<table>
+<thead>
+<tr>
+<th>Attack Type</th>
+<th>Count</th>
+</tr>
+</thead>
+<tbody id="attackDistBody"></tbody>
+</table>
+</div>
+</div>
+
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+
+let audioEnabled=false,incidents=0,threat=0,lastId=0;
+const alertSound=document.getElementById("socAudio");
+
+
+function enableAudio(){alertSound.play().then(()=>{alertSound.pause();audioEnabled=true})}
+function playSound(){if(audioEnabled){alertSound.currentTime=0;alertSound.play()}}
+function focusAttack(row,r){
+
+// highlight row
+document.querySelectorAll("#socTable tr").forEach(x=>x.classList.remove("selected"));
+row.classList.add("selected");
+
+// GRAPH
+riskArr.push(+r[8]);
+packetArr.push(+r[3]);
+loginArr.push(+r[4]);
+abuseArr.push(+r[10]);
+labels.push("CLICK");
+socChart.update();
+
+// POPUP
+let html = `
+IP: ${r[1]}<br>
+Country: ${r[2]}<br>
+Attack: ${r[6]}<br>
+Severity: ${r[7]}<br>
+Risk: ${r[8]}<br>
+Phase: ${r[13]}<br>
+Time: ${r[14]}
+`;
+
+document.getElementById("modalContent").innerHTML = html;
+document.getElementById("attackModal").style.display="block";
+
+// MAP MOVE FROM TABLE CLICK
+let country = r[2];
+if(country==="Unknown") return;
+
+if(geo[country]){
+draw(geo[country],r);
+return;
+}
+
+fetch("https://nominatim.openstreetmap.org/search?format=json&q="+country)
+.then(x=>x.json())
+.then(l=>{
+if(!l.length) return;
+geo[country]={lat:parseFloat(l[0].lat),lon:parseFloat(l[0].lon)};
+draw(geo[country],r);
+});
+}
+
+function closeModal(){
+document.getElementById("attackModal").style.display="none";
+}
+
+
+//////////////// PROFESSIONAL SOC GRAPH //////////////////
+
+const socCtx = document.getElementById("socTimeline").getContext("2d");
+
+let labels=[],riskArr=[],packetArr=[],loginArr=[],abuseArr=[];
+
+let socChart = new Chart(socCtx,{
+type:"line",
+data:{
+labels,
+datasets:[
+
+{
+label:"Risk %",
+data:riskArr,
+borderColor:"#ff3333",
+backgroundColor:"rgba(255,0,0,.25)",
+fill:true,
+yAxisID:"risk",
+tension:.35,
+borderWidth:3,
+pointRadius:2
+},
+
+{
+label:"Packets",
+data:packetArr,
+borderColor:"#00ccff",
+yAxisID:"packets",
+tension:.3,
+borderWidth:3,
+pointRadius:2
+},
+
+{
+label:"Login Fail",
+data:loginArr,
+borderColor:"#ffaa00",
+yAxisID:"small",
+tension:.3,
+borderWidth:3,
+pointRadius:2
+},
+
+{
+label:"Abuse",
+data:abuseArr,
+borderColor:"#00ff99",
+yAxisID:"small",
+tension:.3,
+borderWidth:3,
+pointRadius:2
+}
+
+]
+},
+options:{
+responsive:true,
+maintainAspectRatio:false,
+animation:false,
+interaction:{mode:"index",intersect:false},
+plugins:{legend:{labels:{color:"white"}}},
+scales:{
+risk:{position:"left",min:0,max:100,ticks:{color:"white"}},
+packets:{position:"right",ticks:{color:"white"},grid:{drawOnChartArea:false}},
+small:{display:false},
+x:{ticks:{color:"white"}}
+}
+}
+});
+
+function updateGraph(r){
+
+if(labels.length>40){
+labels.shift();
+riskArr.shift();
+packetArr.shift();
+loginArr.shift();
+abuseArr.shift();
+}
+
+labels.push(new Date().toLocaleTimeString());
+
+riskArr.push(+r[8]);        // REAL RISK
+packetArr.push(+r[3]);     // REAL PACKETS
+loginArr.push(+r[4]);      // REAL LOGIN FAIL
+abuseArr.push(+r[10]);     // REAL ABUSE
+
+socChart.update();
+}
+
+
+//////////////// MAP //////////////////
+let lastAttackId = null;
+let lastLat = null;
+let lastLon = null;
+
+let map=L.map('map',{
+center:[20,78],
+zoom:3,
+minZoom:2,
+maxBounds:[[-85,-180],[85,180]]
+});
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{noWrap:true}).addTo(map);
+
+let marker=null;
+let geo={};
+
+function refreshMap(data){
+
+if(!data.length) return;
+
+let r=data[0];
+let attackId=r[0];
+let country=r[2];
+
+// only react to NEW attack
+
+
+lastAttackId = attackId;
+
+// ignore Unknown completely
+if(country==="Unknown") return;
+
+// cached location
+if(geo[country]){
+draw(geo[country],r);
+return;
+}
+
+// fetch geo once
+fetch("https://nominatim.openstreetmap.org/search?format=json&q="+country)
+.then(x=>x.json())
+.then(l=>{
+if(!l.length) return;
+
+geo[country]={lat:parseFloat(l[0].lat),lon:parseFloat(l[0].lon)};
+draw(geo[country],r);
+});
+}
+
+function draw(l,r){
+
+lastLat = l.lat;
+lastLon = l.lon;
+
+if(marker) map.removeLayer(marker);
+
+let sev = r[7];
+
+let color =
+    sev=="High" ? "#ef4444" :
+    sev=="Medium" ? "#f59e0b" :
+    "#22c55e";
+
+marker = L.circleMarker([l.lat,l.lon],{
+radius: sev=="High"?16 : sev=="Medium"?12 : 8,
+color: color,
+fillColor: color,
+fillOpacity:.9
+}).addTo(map);
+
+// ALWAYS fly to clicked attack
+map.flyTo([l.lat,l.lon],
+          sev=="High"?6:5,
+          {animate:true,duration:1.2});
+
+// Pulse only for High
+if(sev=="High"){
+marker.getElement().classList.add("pulse");
+}
+}
+
+
+//////////////
+
+//////////////// TABLES //////////////////
+
+function refreshTables(data){
+
+let main="",high="";
+
+data.forEach(r=>{
+let cls=r[7]=="High"?"high":r[7]=="Medium"?"medium":"low";
+
+main+=`<tr class="${cls}" onclick='focusAttack(this,${JSON.stringify(r)})'>
+<td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td>
+<td>${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td>
+<td>${r[6]}</td><td>${r[7]}</td><td>${r[8]}</td>
+<td>${r[9]}</td><td>${r[10]}</td><td>${r[11]}</td>
+<td>${r[13]}</td><td>${r[14]}</td></tr>`;
+
+if(r[7]=="High"){
+high+=`<tr class="high"><td>${r[0]}</td><td>${r[1]}</td><td>${r[6]}</td><td>${r[8]}</td><td>${r[13]}</td><td>${r[14]}</td></tr>`;
+}
+});
+
+socTable.innerHTML=main;
+attackLog.innerHTML=high;
+total.innerText=data.length;
+}
+
+function updateAttackStats(data){
+
+let stats={};
+
+data.forEach(r=>{
+let a=r[6];
+stats[a]=(stats[a]||0)+1;
+});
+
+let h="";
+
+Object.keys(stats).forEach(k=>{
+h+=`<tr><td>${k}</td><td>${stats[k]}</td></tr>`;
+});
+
+document.getElementById("attackDistBody").innerHTML = h;
+}
+
+
+function updateTopIPs(data){
+
+let ips={};
+
+data.forEach(r=>{
+let ip=r[1];
+ips[ip]=(ips[ip]||0)+1;
+});
+
+let sorted=Object.entries(ips)
+.sort((a,b)=>b[1]-a[1])
+.slice(0,5);
+
+let html="";
+
+sorted.forEach(i=>{
+html+=`<tr><td>${i[0]}</td><td>${i[1]}</td></tr>`;
+});
+
+document.getElementById("topAttackersBody").innerHTML = html;
+}
+
+
+
+//////////////// LOOP //////////////////
+
+setInterval(()=>{
+fetch("/logs").then(r=>r.json()).then(data=>{
+if(!data.length)return;
+
+updateGraph(data[0]);
+
+if(data[0][0]>lastId){
+if(data[0][7]=="High"){
+playSound();
+incidents++;
+threat+=15;
+alertBanner.style.display="block";
+setTimeout(()=>alertBanner.style.display="none",4000);
+}
+lastId=data[0][0];
+}
+
+killPhase.innerText=data[0][13];
+killPhase.style.color=data[0][13]=="Execution"?"#ef4444":"#22c55e";
+
+incidentCount.innerText=incidents;
+threatScore.innerText=threat;
+
+refreshMap(data);
+refreshTables(data);
+updateAttackStats(data);
+updateTopIPs(data);
+
+
+});
+},3000);
+
+</script>
+<script>
+function go(id){
+document.getElementById(id).scrollIntoView({behavior:'smooth'});
+}
+</script>
+<div id="socNav">
+<button onclick="go('topAttackers')">Top Attack</button>
+<button onclick="go('map')">Map</button>
+<button onclick="go('graphs')">Graphs</button>
+</div>
+
+<div id="scrollBtns">
+<button onclick="window.scrollTo({top:0,behavior:'smooth'})">⬆</button>
+<button onclick="window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'})">⬇</button>
+</div>
+<div id="attackModal" style="
+display:none;
+position:fixed;
+top:0;left:0;
+width:100%;height:100%;
+background:rgba(0,0,0,.7);
+z-index:9999">
+
+<div style="
+background:#020617;
+width:400px;
+margin:100px auto;
+padding:20px;
+border-radius:12px;
+box-shadow:0 0 25px #0ea5e9">
+
+<h3>🚨 Attack Details</h3>
+
+<div id="modalContent"></div>
+
+<br>
+<button onclick="closeModal()">Close</button>
+</div>
+</div>
+
+
+</body>
+
+</html>

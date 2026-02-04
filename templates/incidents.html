@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>SOC Incident Management</title>
+
+<style>
+body{background:#020617;color:white;font-family:Arial}
+h2{text-align:center}
+table{width:98%;margin:auto;border-collapse:collapse}
+th,td{border:1px solid #334155;padding:6px;text-align:center}
+th{background:#020617;color:#38bdf8;position:sticky;top:0}
+.open{background:#7f1d1d}
+.closed{background:#022c22}
+input{background:#020617;color:white;border:1px solid #38bdf8;padding:4px}
+textarea{background:#020617;color:white;border:1px solid #38bdf8}
+button{background:#22c55e;border:none;padding:4px 8px;cursor:pointer}
+</style>
+</head>
+
+<body>
+
+<h2>🚨 SOC Incident Management</h2>
+
+<button onclick="location.href='/'">Dashboard</button>
+
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>IP</th>
+<th>Attack</th>
+<th>Risk</th>
+<th>Status</th>
+<th>Analyst</th>
+<th>Comment</th>
+<th>Action</th>
+</tr>
+</thead>
+
+<tbody id="inc"></tbody>
+</table>
+
+<script>
+
+fetch("/api/incidents")
+.then(r=>r.json())
+.then(d=>{
+let h="";
+d.forEach(i=>{
+let c=i[4]=="Closed"?"closed":"open";
+h+=`<tr class="${c}">
+<td>${i[0]}</td>
+<td>${i[1]}</td>
+<td>${i[2]}</td>
+<td>${i[3]}</td>
+<td>${i[4]}</td>
+
+<td>
+<input value="${i[6]||''}" onchange="update(${i[0]},this.value,null)">
+</td>
+
+<td>
+<textarea onchange="update(${i[0]},null,this.value)">${i[7]||''}</textarea>
+</td>
+
+<td>
+{% if role=="admin" %}
+${i[4]=="Open"?`<button onclick="closeInc(${i[0]})">Close</button>`:"✓"}
+{% else %}
+View Only
+{% endif %}
+</td>
+
+
+</tr>`;
+});
+inc.innerHTML=h;
+});
+
+function closeInc(id){
+fetch("/close_incident/"+id).then(()=>location.reload());
+}
+
+function update(id,a,c){
+let f=new FormData();
+if(a!==null)f.append("analyst",a);
+if(c!==null)f.append("comment",c);
+
+fetch("/update_incident/"+id,{method:"POST",body:f});
+}
+</script>
+
+</body>
+</html>
