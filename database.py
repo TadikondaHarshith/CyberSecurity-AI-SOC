@@ -5,11 +5,20 @@ DB_NAME = "soc.db"
 # ---------------- INIT DATABASE ----------------
 
 def init_db():
-
     conn = sqlite3.connect("/tmp/soc.db")
     c = conn.cursor()
 
-    # Logs table
+    # USERS
+    c.execute("""
+    CREATE TABLE IF NOT EXISTS users(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT,
+        password TEXT,
+        role TEXT
+    )
+    """)
+
+    # LOGS
     c.execute("""
     CREATE TABLE IF NOT EXISTS logs(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -29,17 +38,7 @@ def init_db():
     )
     """)
 
-    # Users table
-    c.execute("""
-    CREATE TABLE IF NOT EXISTS users(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT,
-        password TEXT,
-        role TEXT
-    )
-    """)
-
-    # Incidents table
+    # INCIDENTS
     c.execute("""
     CREATE TABLE IF NOT EXISTS incidents(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -50,23 +49,14 @@ def init_db():
         status TEXT DEFAULT 'Open',
         analyst TEXT,
         comment TEXT,
-        created_time TEXT,
+        time TEXT,
         closed_time TEXT
     )
     """)
 
-    # Default admin user
-    from werkzeug.security import generate_password_hash
-
-    c.execute("SELECT * FROM users WHERE username='admin'")
-    if not c.fetchone():
-        c.execute("""
-        INSERT INTO users(username,password,role)
-        VALUES(?,?,?)
-        """,("admin", generate_password_hash("admin123"), "admin"))
-
     conn.commit()
     conn.close()
+
 
 
 # ---------------- INSERT ATTACK ----------------
