@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import os
 from collections import Counter
 
-ABUSE_API_KEY="10d1410addb0e2cd7f86bfcc20c131837306982ce86bbefc4717c56338c4e953f4de9fb9a8e157c1"
+ABUSE_API_KEY = os.environ.get("ABUSE_API_KEY")
 attack_counter = 0
 
 
@@ -24,9 +24,10 @@ print("[SOC] App started")
 
 # ================= EMAIL CONFIG =================
 
-EMAIL_FROM = "harshith2007tadikonda@gmail.com"
-EMAIL_PASS = "uwhpibgjfpnctldy"
-EMAIL_TO   = "harshith2007tadikonda@gmail.com"
+EMAIL_FROM = os.environ.get("EMAIL_FROM")
+EMAIL_PASS = os.environ.get("EMAIL_PASS")
+EMAIL_TO   = os.environ.get("EMAIL_TO")
+
 
 def block_ip(ip):
 
@@ -385,7 +386,7 @@ def update_incident(iid):
     conn.close()
 
     return "ok"
-app.secret_key = "socsecret"
+app.secret_key = os.environ.get("FLASK_SECRET_KEY")
 
 
 @app.route("/login", methods=["GET","POST"])
