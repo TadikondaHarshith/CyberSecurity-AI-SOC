@@ -144,6 +144,32 @@ def geo_lookup(ip):
 print("[SOC] Initializing database")
 init_db()
 
+def create_default_user():
+    con = sqlite3.connect("/tmp/soc.db")
+    c = con.cursor()
+
+    c.execute("""
+    CREATE TABLE IF NOT EXISTS users(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT,
+        password TEXT,
+        role TEXT
+    )
+    """)
+
+    from werkzeug.security import generate_password_hash
+
+    c.execute("SELECT * FROM users")
+    if not c.fetchone():
+        c.execute("""
+        INSERT INTO users(username,password,role)
+        VALUES(?,?,?)
+        """,("admin",generate_password_hash("admin123"),"admin"))
+
+    con.commit()
+    con.close()
+
+create_default_user()
 
 def abuse_lookup(ip):
 
