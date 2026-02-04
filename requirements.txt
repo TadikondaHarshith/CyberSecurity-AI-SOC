@@ -3,3 +3,4 @@ requests
 matplotlib
 reportlab
 werkzeug
+gunicorn
