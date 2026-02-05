@@ -7,6 +7,11 @@ This project demonstrates a complete Blue Team workflow:
 Detection → Analysis → Response → Reporting
 
 🚀 Features
+### 🌐 Deployment
+Hosted on Render
+
+Live URL: https://cybersecurity-ai-soc.onrender.com
+
 🔍 Attack Detection
 
 Simulated cyber attacks (DDoS, BruteForce, SQL Injection, PortScan)
