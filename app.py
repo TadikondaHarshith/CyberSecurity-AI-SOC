@@ -515,7 +515,8 @@ def report():
     highest_risk_ip = max(risks, key=lambda x: x[1])[0]
     highest_risk_score = max(l[3] for l in logs)
 
-    times = [l[4][:13] for l in logs]
+    times = [l[4][:13] if l[4] else "Unknown" for l in logs]
+
     peak_time = Counter(times).most_common(1)[0][0]
 
     con.close()
