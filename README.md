@@ -12,6 +12,27 @@ Hosted on Render
 
 Live URL: https://cybersecurity-ai-soc.onrender.com
 
+### 🔐 Admin Access (Demo Only)
+
+This project is deployed for demonstration purposes.
+
+Admin Panel:
+URL: https://cybersecurity-ai-soc.onrender.com
+
+Demo Credentials:
+Username: admin
+Password: admin123
+
+⚠️ Note:
+These credentials are for demo/testing only.
+In production, authentication is protected via environment variables and secure hashing.
+
+API Access:
+The `/predict` endpoint is publicly exposed for attack simulation via the attack_generator.py script.
+
+No sensitive production data is stored.
+
+
 🔍 Attack Detection
 
 Simulated cyber attacks (DDoS, BruteForce, SQL Injection, PortScan)
