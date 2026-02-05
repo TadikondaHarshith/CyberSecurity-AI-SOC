@@ -14,6 +14,11 @@ import matplotlib.pyplot as plt
 import os
 from collections import Counter
 
+# FORCE DB INIT ON STARTUP
+init_db()
+print("[SOC] Database initialized on startup")
+
+
 ABUSE_API_KEY = os.environ.get("ABUSE_API_KEY")
 attack_counter = 0
 
