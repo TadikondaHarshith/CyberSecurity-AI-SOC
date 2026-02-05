@@ -1,6 +1,6 @@
 import sqlite3
 
-DB_NAME = "soc.db"
+DB_NAME = "/tmp/soc.db"
 
 # ---------------- INIT DATABASE ----------------
 
