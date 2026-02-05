@@ -2,7 +2,8 @@ import requests
 import random
 import time
 
-URL = "http://127.0.0.1:5000/predict"
+URL = "https://cybersecurity-ai-soc.onrender.com/predict"
+
 
 countries = [
     "India","USA","Germany","Russia","China","Brazil","France","UK"
@@ -14,7 +15,6 @@ while True:
         "packets": random.randint(300,2500),
         "login_fail": random.randint(0,1),
         "sql": random.randint(0,1),
-        "country": random.choice(countries)
     }
 
     headers = {

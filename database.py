@@ -33,6 +33,7 @@ def init_db():
         mitre TEXT,
         abuse INTEGER,
         reports INTEGER,
+        attack_prob INTEGER,
         phase TEXT,
         time TEXT
     )
